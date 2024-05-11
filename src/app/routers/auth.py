@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from ssl import get_server_certificate
 from typing import Annotated
 
 import sqlalchemy as sa
@@ -11,6 +10,7 @@ from jose import JWTError, jwt
 from models.student import Student
 from passlib.context import CryptContext
 from pydantic import BaseModel
+from schemas.student import StudentOut
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -92,3 +92,8 @@ def login(formdata: Annotated[OAuth2PasswordRequestForm, Depends()]):
         data={"sub": user.email}, expires_delta=timedelta(ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     return Token(access_token=token, token_type="Bearer")
+
+
+@auth_router.get("/me", response_model=StudentOut)
+def whoami(current_user: Annotated[Student, Depends(get_current_user)]):
+    return current_user
