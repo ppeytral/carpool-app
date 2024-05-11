@@ -7,10 +7,10 @@ from config.database import get_session
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from models.student import Student
+from models.user import User
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from schemas.student import StudentOut
+from schemas.user import UserOut
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -45,19 +45,19 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         raise credentials_exception
 
     with get_session() as s:
-        stmt = sa.select(Student).where(Student.email == username)
+        stmt = sa.select(User).where(User.username == username)
         user = s.scalar(stmt)
 
         if user is None:
             raise credentials_exception
-        user.school.address
-        user.address
+        user.student.school.address
+        user.student.address
     return user
 
 
-def authenticate_user(username: str, password: str) -> Student:
+def authenticate_user(username: str, password: str) -> User:
     with get_session() as s:
-        stmt = sa.select(Student).where(Student.email == username)
+        stmt = sa.select(User).where(User.username == username)
         user = s.scalar(stmt)
         if not user:
             raise HTTPException(
@@ -89,11 +89,12 @@ def login(formdata: Annotated[OAuth2PasswordRequestForm, Depends()]):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
     token = create_access_token(
-        data={"sub": user.email}, expires_delta=timedelta(ACCESS_TOKEN_EXPIRE_MINUTES)
+        data={"sub": user.username},
+        expires_delta=timedelta(ACCESS_TOKEN_EXPIRE_MINUTES),
     )
     return Token(access_token=token, token_type="Bearer")
 
 
-@auth_router.get("/me", response_model=StudentOut)
-def whoami(current_user: Annotated[Student, Depends(get_current_user)]):
+@auth_router.get("/me", response_model=UserOut)
+def whoami(current_user: Annotated[User, Depends(get_current_user)]):
     return current_user
