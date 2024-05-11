@@ -3,15 +3,14 @@ from ssl import get_server_certificate
 from typing import Annotated
 
 import sqlalchemy as sa
+from config.config import get_setting
+from config.database import get_session
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
+from models.student import Student
 from passlib.context import CryptContext
 from pydantic import BaseModel
-
-from config.config import get_setting
-from config.database import get_session
-from models.student import Student
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -49,8 +48,10 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         stmt = sa.select(Student).where(Student.email == username)
         user = s.scalar(stmt)
 
-    if user is None:
-        raise credentials_exception
+        if user is None:
+            raise credentials_exception
+        user.school.address
+        user.address
     return user
 
 
