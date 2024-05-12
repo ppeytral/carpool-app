@@ -24,7 +24,11 @@ def upgrade() -> None:
         "school",
         sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
         sa.Column("name", sa.String()),
-        sa.Column("address_id", sa.Integer()),
+        sa.Column(
+            "address_id",
+            sa.Integer(),
+            sa.ForeignKey("carpool.address.id", ondelete="CASCADE"),
+        ),
         schema="carpool",
     )
 

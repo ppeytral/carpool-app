@@ -30,8 +30,24 @@ def upgrade() -> None:
         sa.Column("password", sa.String()),
         sa.Column("driving_licence_nb", sa.String()),
         sa.Column("driving_licence_validity", sa.DateTime()),
-        sa.Column("address_id", sa.Integer()),
-        sa.Column("school_id", sa.Integer()),
+        sa.Column(
+            "address_id",
+            sa.Integer(),
+            sa.ForeignKey(
+                "carpool.address.id",
+                ondelete="CASCADE",
+                onupdate="CASCADE",
+            ),
+        ),
+        sa.Column(
+            "school_id",
+            sa.Integer(),
+            sa.ForeignKey(
+                "carpool.school.id",
+                ondelete="CASCADE",
+                onupdate="CASCADE",
+            ),
+        ),
         schema="carpool",
     )
 

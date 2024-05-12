@@ -23,7 +23,16 @@ def upgrade() -> None:
     user_table = op.create_table(
         "user",
         sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
-        sa.Column("student_id", sa.Integer()),
+        sa.Column(
+            "student_id",
+            sa.Integer(),
+            sa.ForeignKey(
+                "carpool.student.id",
+                ondelete="CASCADE",
+                onupdate="CASCADE",
+            ),
+            nullable=False,
+        ),
         sa.Column("username", sa.String()),
         sa.Column("password", sa.String()),
         sa.Column("is_active", sa.Boolean()),
