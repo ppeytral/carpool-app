@@ -42,6 +42,11 @@ def upgrade() -> None:
                 "postal_code": "13540",
                 "city": "Puyricard",
             },
+            {
+                "street": "rue de mon cul sur la commode",
+                "postal_code": "84140",
+                "city": "Montfavet",
+            },
         ],
     )
 

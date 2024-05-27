@@ -54,6 +54,12 @@ def upgrade() -> None:
                 "password": "16071988",
                 "is_active": True,
             },
+            {
+                "student_id": 3,
+                "username": "ouliwliw",
+                "password": "password",
+                "is_active": True,
+            },
         ],
     )
 
