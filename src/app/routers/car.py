@@ -2,6 +2,7 @@ import sqlalchemy as sa
 from config.database import get_session
 from fastapi import APIRouter
 from models.car import Car
+from schemas.car import CarIn
 
 car_router = APIRouter(
     prefix="/car",
@@ -19,3 +20,15 @@ def get_all():
         result = s.scalars(stmt).all()
 
         return list(result)
+
+
+@car_router.post(
+    "/",
+    summary="Create One",
+    tags=["Car"],
+)
+def create_one(car_infos: CarIn):
+    with get_session() as s:
+        c = Car(**dict(car_infos))
+        s.add(c)
+        s.commit()
