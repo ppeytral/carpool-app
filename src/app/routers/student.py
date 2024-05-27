@@ -3,7 +3,10 @@ from config.database import get_session
 from fastapi import APIRouter
 from models.student import Student
 
-student_router = APIRouter(prefix="/student")
+student_router = APIRouter(
+    prefix="/student",
+    tags=["Student"],
+)
 
 
 @student_router.get(

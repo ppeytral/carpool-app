@@ -4,7 +4,10 @@ from fastapi import APIRouter
 from models.address import Address
 from schemas.address import AddressOut
 
-address_router = APIRouter(prefix="/address")
+address_router = APIRouter(
+    prefix="/address",
+    tags=["Address"],
+)
 
 
 @address_router.get(path="/", summary="Get all", response_model=list[AddressOut])

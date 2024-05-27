@@ -14,7 +14,7 @@ from schemas.user import UserOut
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-auth_router = APIRouter()
+auth_router = APIRouter(tags=["Auth"])
 
 SECRET_KEY = get_setting("jwt_secret_key")
 ALGORITHM = get_setting("jwt_algorithm")
