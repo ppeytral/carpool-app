@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from routers.address import address_router
 from routers.auth import auth_router
+from routers.car import car_router
 from routers.car_make import car_make_router
 from routers.car_model import car_model_router
 from routers.student import student_router
@@ -32,6 +33,7 @@ app.include_router(auth_router)
 app.include_router(car_make_router)
 app.include_router(car_model_router)
 app.include_router(student_router)
+app.include_router(car_router)
 
 
 if __name__ == "__main__":
