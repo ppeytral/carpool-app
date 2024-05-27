@@ -22,9 +22,8 @@ class Student(Base):
     address_id: Mapped[int] = mapped_column(ForeignKey(column="carpool.address.id"))
     address: Mapped["Address"] = relationship()
     email: Mapped[str] = mapped_column(String())
-    password: Mapped[str] = mapped_column(String())
     driving_licence_nb: Mapped[str] = mapped_column(String())
     driving_licence_validity: Mapped[datetime] = mapped_column(DateTime())
 
     def __repr__(self) -> str:
-        return f"Student(id={self.id!r}, firstname={self.firstname!r}, lastname={self.lastname!r}, school={self.school!r}, address={self.address!r}, email={self.email!r}, password={self.password!r}, driving_licence_nb={self.driving_licence_nb!r}, driving_licence_validity={self.driving_licence_validity!r})"
+        return f"Student(id={self.id!r}, firstname={self.firstname!r}, lastname={self.lastname!r}, school={self.school!r}, address={self.address!r}, email={self.email!r}, driving_licence_nb={self.driving_licence_nb!r}, driving_licence_validity={self.driving_licence_validity!r})"
