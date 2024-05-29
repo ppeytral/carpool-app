@@ -1,13 +1,10 @@
-from models.car_make import CarMake
 from pydantic import BaseModel
+from schemas.car_make import CarMakeOut
 
 
 class CarModelOut(BaseModel):
 
     id: int
-    car_make: CarMake
-    name: str
+    car_make: CarMakeOut
+    model_name: str
     capacity: int
-
-    class Config:
-        arbitrary_types_allowed = True
