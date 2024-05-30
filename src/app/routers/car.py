@@ -32,3 +32,15 @@ def create_one(car_infos: CarIn):
         c = Car(**dict(car_infos))
         s.add(c)
         s.commit()
+
+
+@car_router.delete(
+    "/{car_id}",
+    summary="Delete a car",
+)
+def delete_car(car_id: int):
+    with get_session() as s:
+        stmt = sa.delete(Car).where(Car.id == car_id)
+        s.execute(stmt)
+        s.commit()
+        return {"msg": f"car successfully deleted: '{car_id}'"}
