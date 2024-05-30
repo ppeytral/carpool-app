@@ -36,3 +36,16 @@ def get_user_by_id(user_id: int):
         result = s.scalars(stmt).first()
         print(result)
         return result
+
+
+@user_router.delete(
+    "/{user_id}",
+    summary="Delete user by id",
+)
+def delete_user_by_id(user_id: int):
+    with get_session() as s:
+        stmt = sa.delete(User).where(User.id == user_id)
+        s.execute(stmt)
+        s.commit()
+
+    return {"msg": f"Deleted user: '{user_id}'"}
