@@ -47,6 +47,16 @@ def upgrade() -> None:
                 "postal_code": "84140",
                 "city": "Montfavet",
             },
+            {
+                "street": "60, chemin de Fontanille",
+                "postal_code": "84140",
+                "city": "Avignon",
+            },
+            {
+                "street": "180, rue Philippe de Girard",
+                "postal_code": "84120",
+                "city": "Pertuis",
+            },
         ],
     )
 

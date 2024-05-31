@@ -37,11 +37,11 @@ def upgrade() -> None:
         [
             {
                 "name": "Nextech Avignon",
-                "address_id": 1,
+                "address_id": 4,
             },
             {
                 "name": "Nextech Pertuis",
-                "address_id": 2,
+                "address_id": 5,
             },
         ],
     )
