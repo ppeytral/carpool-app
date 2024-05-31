@@ -73,6 +73,7 @@ def update_user_by_id(user_id: int, new_user: UserUpdate):
                 student_id=new_user.student_id or user_to_update.student_id,
                 is_active=new_user.is_active or user_to_update.is_active,
                 username=new_user.username or user_to_update.username,
+                updated_at=new_user.updated_at,
             )
         )
         s.execute(stmt)

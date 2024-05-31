@@ -47,6 +47,8 @@ def upgrade() -> None:
                 onupdate="CASCADE",
             ),
         ),
+        sa.Column("created_at", sa.DateTime()),
+        sa.Column("updated_at", sa.DateTime()),
         schema="carpool",
     )
 
@@ -62,6 +64,8 @@ def upgrade() -> None:
                 "driving_licence_validity": datetime.now(),
                 "address_id": 1,
                 "school_id": 1,
+                "created_at": datetime.now(),
+                "updated_at": datetime.now(),
             },
             {
                 "firstname": "Raphaelle",
@@ -72,6 +76,8 @@ def upgrade() -> None:
                 "driving_licence_validity": datetime.now(),
                 "address_id": 2,
                 "school_id": 2,
+                "created_at": datetime.now(),
+                "updated_at": datetime.now(),
             },
             {
                 "firstname": "Clément",
@@ -82,6 +88,8 @@ def upgrade() -> None:
                 "driving_licence_validity": datetime.now(),
                 "address_id": 2,
                 "school_id": 2,
+                "created_at": datetime.now(),
+                "updated_at": datetime.now(),
             },
         ],
     )
