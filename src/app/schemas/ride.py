@@ -32,3 +32,18 @@ class RideUpdate(BaseModel):
     on_friday: bool | None = None
     on_saturday: bool | None = None
     on_sunday: bool | None = None
+
+
+class RideIn(BaseModel):
+    seats_offered: int
+    car_id: int
+    start_time: time
+    start_date: date
+    end_date: date
+    on_monday: bool
+    on_tuesday: bool
+    on_wednesday: bool
+    on_thursday: bool
+    on_friday: bool
+    on_saturday: bool
+    on_sunday: bool

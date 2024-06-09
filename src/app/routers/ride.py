@@ -1,9 +1,10 @@
 import sqlalchemy as sa
 from config.database import get_session
 from fastapi import APIRouter, HTTPException, status
+from models.car import Car
 from models.ride import Ride
 from models.user import User
-from schemas.ride import RideOut, RideUpdate
+from schemas.ride import RideIn, RideOut, RideUpdate
 
 ride_router = APIRouter(
     prefix="/ride",
@@ -45,7 +46,7 @@ def update_ride_by_id(ride_id: int, new_ride: RideUpdate):
             sa.select(Ride).where(Ride.id == ride_id)
         ).first()
         if not ride_to_update:
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"ride_id not found: '{ride_id}'",
             )
@@ -71,3 +72,35 @@ def update_ride_by_id(ride_id: int, new_ride: RideUpdate):
         s.execute(stmt)
         s.commit()
         return {"msg": f"Updated user: '{ride_id}'"}
+
+
+@ride_router.post(
+    "/",
+    summary="Create a ride",
+)
+def create_ride(ride: RideIn):
+    with get_session() as s:
+        car_stmt = sa.select(Car).where(Car.id == ride.car_id)
+        car = s.scalars(car_stmt).first()
+        if not car:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"car_id not found: '{ride.car_id}'",
+            )
+        stmt = sa.insert(Ride).values(
+            seats_offered=ride.seats_offered,
+            car_id=ride.car_id,
+            start_time=ride.start_time,
+            start_date=ride.start_date,
+            end_date=ride.end_date,
+            on_monday=ride.on_monday,
+            on_tuesday=ride.on_tuesday,
+            on_wednesday=ride.on_wednesday,
+            on_thursday=ride.on_thursday,
+            on_friday=ride.on_friday,
+            on_saturday=ride.on_saturday,
+            on_sunday=ride.on_sunday,
+        )
+        s.execute(stmt)
+        s.commit()
+        return {"msg": "ride created successfully"}
