@@ -1,10 +1,14 @@
+from datetime import datetime
+
 import sqlalchemy as sa
 from config.database import get_session
 from fastapi import APIRouter, HTTPException, status
 from models.car import Car
 from models.ride import Ride
+from models.student import Student
 from models.user import User
 from schemas.ride import RideIn, RideOut, RideUpdate
+from sqlalchemy.orm import joinedload
 
 ride_router = APIRouter(
     prefix="/ride",
@@ -15,16 +19,46 @@ ride_router = APIRouter(
 @ride_router.get(
     path="/",
     summary="Get all",
-    response_model=list[RideOut],
+    # response_model=list[RideOut],
 )
-def get_all():
+def get_all(
+    start_location: str | None = None,
+    end_location: str | None = None,
+):
     with get_session() as s:
-        stmt = sa.select(Ride)
-        result = s.scalars(stmt).all()
-        for r in result:
-            print(r.car)
+        stmt = (
+            sa.select(Ride)
+            .options(
+                joinedload(Ride.car)
+                .joinedload(Car.student)
+                .joinedload(Student.address)
+            )
+            .options(
+                joinedload(Ride.car)
+                .joinedload(Car.student)
+                .joinedload(Student.school)
+            )
+        )
+        trips = s.scalars(stmt).all()
 
-        return list(result)
+    if start_location is None and end_location is None:
+        return trips
+
+    result = []
+    for r in trips:
+        if (
+            start_location is not None
+            and str(r.car.student.address.city).lower()
+            == start_location.lower()
+        ):
+            result.append(r)
+        if (
+            end_location is not None
+            and str(r.car.student.school.name).lower() == end_location.lower()
+        ):
+            result.append(r)
+
+    return list(result)
 
 
 @ride_router.delete(
@@ -104,3 +138,12 @@ def create_ride(ride: RideIn):
         s.execute(stmt)
         s.commit()
         return {"msg": "ride created successfully"}
+
+
+@ride_router.get(
+    "/start_end_locations", summary="Get all start and end locations"
+)
+def get_start_locations():
+    with get_session() as s:
+        stmt = sa.select(Ride)
+        rides = s.scalars(stmt).all()
