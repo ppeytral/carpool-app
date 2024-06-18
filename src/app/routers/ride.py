@@ -6,6 +6,7 @@ from config.database import get_session
 from fastapi import APIRouter, Depends, HTTPException, status
 from models.address import Address
 from models.car import Car
+from models.car_model import CarModel
 from models.ride import Ride
 from models.school import School
 from models.student import Student
@@ -13,6 +14,7 @@ from models.user import User
 from routers.auth import get_current_user
 from schemas.ride import RideIn, RideOut, RideUpdate
 from schemas.student import StudentOut
+from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm import joinedload
 
 ride_router = APIRouter(
@@ -49,6 +51,11 @@ def get_all(
         .join(Student.school)
         .options(
             joinedload(Ride.car)
+            .joinedload(Car.car_model)
+            .joinedload(CarModel.car_make)
+        )
+        .options(
+            joinedload(Ride.car)
             .joinedload(Car.student)
             .joinedload(Student.address)
         )
@@ -56,16 +63,23 @@ def get_all(
             joinedload(Ride.car)
             .joinedload(Car.student)
             .joinedload(Student.school)
+            .joinedload(School.address)
         )
     )
     for f in filters:
         stmt = stmt.where(f[0] == f[1])
 
     with get_session() as s:
+
         trips = s.scalars(stmt).all()
-        for t in trips:
-            print(t.car)
-    return list(trips)
+        if show_full is False:
+            result = []
+            for t in trips:
+                if len(t.passengers) < t.seats_offered:
+                    print(t.passengers)
+                    result.append(t)
+            return list(result)
+        return trips
 
 
 @ride_router.delete(
@@ -185,9 +199,16 @@ def subscribe_ride(ride_id: int, user: User = Depends(get_current_user)):
 
         if ride.seats_offered <= len(ride.passengers):
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="ride is full"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Ce trajet est complet.",
             )
-        ride.passengers.append(user.student)
-        s.commit()
+        try:
+            ride.passengers.append(user.student)
+            s.commit()
+        except InvalidRequestError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Vous êtes déjà enregistré sur ce trajet.",
+            )
 
     return {"msg": "successfully subscribed"}
