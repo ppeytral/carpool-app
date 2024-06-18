@@ -2,12 +2,15 @@ import sqlalchemy as sa
 from config.database import get_session
 from fastapi import APIRouter, HTTPException, status
 from models.car import Car
+from models.car_model import CarModel
 from models.ride import Ride
+from models.school import School
 from models.student import Student
 from models.user import Student
 from schemas.car import CarOut
 from schemas.ride import RideOut
 from schemas.student import StudentUpdate
+from sqlalchemy.orm import joinedload
 
 student_router = APIRouter(
     prefix="/student",
@@ -34,14 +37,24 @@ def get_all():
 )
 def get_cars_by_student_id(student_id: int):
     with get_session() as s:
-        stmt = sa.select(Student).where(Student.id == student_id)
+        stmt = sa.select(Student).where(Student.id == student_id).options()
         result = s.scalars(stmt).first()
 
         if result is None:
-            return
-        for c in result.cars:
-            print(c)
-        return result.cars
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+        stmt = (
+            sa.select(Car)
+            .options(joinedload(Car.car_model).joinedload(CarModel.car_make))
+            .options(
+                joinedload(Car.student)
+                .joinedload(Student.school)
+                .joinedload(School.address)
+            )
+            .options(joinedload(Car.student).joinedload(Student.address))
+        )
+        result = s.scalars(stmt).all()
+        return result
 
 
 @student_router.put(

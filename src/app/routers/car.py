@@ -2,7 +2,11 @@ import sqlalchemy as sa
 from config.database import get_session
 from fastapi import APIRouter
 from models.car import Car
+from models.car_model import CarModel
+from models.school import School
+from models.student import Student
 from schemas.car import CarIn, CarOut
+from sqlalchemy.orm import joinedload
 
 car_router = APIRouter(
     prefix="/car",
@@ -10,13 +14,24 @@ car_router = APIRouter(
 )
 
 
-@car_router.get(path="/", summary="Get all", response_model=list[CarOut])
+@car_router.get(
+    path="/",
+    summary="Get all",
+    response_model=list[CarOut],
+)
 def get_all():
     with get_session() as s:
-        stmt = sa.select(Car)
+        stmt = (
+            sa.select(Car)
+            .options(joinedload(Car.car_model).joinedload(CarModel.car_make))
+            .options(
+                joinedload(Car.student)
+                .joinedload(Student.school)
+                .joinedload(School.address)
+            )
+            .options(joinedload(Car.student).joinedload(Student.address))
+        )
         result = s.scalars(stmt).all()
-        for r in result:
-            print(r.car_model)
 
         return list(result)
 

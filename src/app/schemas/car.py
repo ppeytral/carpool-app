@@ -13,4 +13,5 @@ class CarOut(BaseModel):
     id: int
     vin: str
     car_model: CarModelOut
+    student: StudentOut
     student_id: int
