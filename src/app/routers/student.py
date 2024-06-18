@@ -109,12 +109,25 @@ def get_student_offered_rides(student_id: int):
             )
         stmt = (
             sa.select(Ride)
-            .join(Car, Ride.car_id == Car.id)
+            .join(Car)
             .where(Car.student_id == student_id)
+            .options(
+                joinedload(Ride.car)
+                .joinedload(Car.student)
+                .joinedload(Student.address)
+            )
+            .options(
+                joinedload(Ride.car)
+                .joinedload(Car.student)
+                .joinedload(Student.school)
+                .joinedload(School.address)
+            )
+            .options(
+                joinedload(Ride.car)
+                .joinedload(Car.car_model)
+                .joinedload(CarModel.car_make)
+            )
         )
         result = s.scalars(stmt).all()
-
-        for r in result:
-            print(r.car)
 
         return result
