@@ -1,10 +1,13 @@
 from datetime import datetime
+from os import walk
 
 import sqlalchemy as sa
 from config.database import get_session
 from fastapi import APIRouter, HTTPException, status
+from models.address import Address
 from models.car import Car
 from models.ride import Ride
+from models.school import School
 from models.student import Student
 from models.user import User
 from schemas.ride import RideIn, RideOut, RideUpdate
@@ -24,41 +27,43 @@ ride_router = APIRouter(
 def get_all(
     start_location: str | None = None,
     end_location: str | None = None,
+    show_full: bool = False,
 ):
-    with get_session() as s:
-        stmt = (
-            sa.select(Ride)
-            .options(
-                joinedload(Ride.car)
-                .joinedload(Car.student)
-                .joinedload(Student.address)
-            )
-            .options(
-                joinedload(Ride.car)
-                .joinedload(Car.student)
-                .joinedload(Student.school)
-            )
+
+    filters = []
+
+    if start_location is not None:
+        filters.append((Address.city, start_location))
+    if end_location is not None:
+        filters.append((School.name, end_location))
+
+    stmt = (
+        sa.select(Ride)
+        .join(Ride.car)
+        .join(Car.student)
+        .join(Student.address)
+        .join(Ride.car)
+        .join(Car.student)
+        .join(Student.school)
+        .options(
+            joinedload(Ride.car)
+            .joinedload(Car.student)
+            .joinedload(Student.address)
         )
+        .options(
+            joinedload(Ride.car)
+            .joinedload(Car.student)
+            .joinedload(Student.school)
+        )
+    )
+    for f in filters:
+        stmt = stmt.where(f[0] == f[1])
+
+    with get_session() as s:
         trips = s.scalars(stmt).all()
-
-    if start_location is None and end_location is None:
-        return trips
-
-    result = []
-    for r in trips:
-        if (
-            start_location is not None
-            and str(r.car.student.address.city).lower()
-            == start_location.lower()
-        ):
-            result.append(r)
-        if (
-            end_location is not None
-            and str(r.car.student.school.name).lower() == end_location.lower()
-        ):
-            result.append(r)
-
-    return list(result)
+        for t in trips:
+            print(t.car)
+    return list(trips)
 
 
 @ride_router.delete(
@@ -138,12 +143,3 @@ def create_ride(ride: RideIn):
         s.execute(stmt)
         s.commit()
         return {"msg": "ride created successfully"}
-
-
-@ride_router.get(
-    "/start_end_locations", summary="Get all start and end locations"
-)
-def get_start_locations():
-    with get_session() as s:
-        stmt = sa.select(Ride)
-        rides = s.scalars(stmt).all()
