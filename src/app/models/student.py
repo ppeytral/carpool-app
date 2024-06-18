@@ -1,6 +1,9 @@
 from datetime import datetime
 
 from models.base import Base
+from models.car import Car
+from models.passenger import passenger
+from models.ride import Ride
 from models.school import Address, School
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -19,12 +22,17 @@ class Student(Base):
         ),
     )
     school: Mapped["School"] = relationship(cascade="all")
-    address_id: Mapped[int] = mapped_column(ForeignKey(column="carpool.address.id"))
+    address_id: Mapped[int] = mapped_column(
+        ForeignKey(column="carpool.address.id")
+    )
     address: Mapped["Address"] = relationship("Address")
     email: Mapped[str] = mapped_column(String())
     driving_licence_nb: Mapped[str] = mapped_column(String())
     driving_licence_validity: Mapped[datetime] = mapped_column(DateTime())
     cars: Mapped[list["Car"]] = relationship()
+    rides: Mapped[list["Ride"]] = relationship(
+        secondary=passenger, back_populates="passengers"
+    )
 
     def __repr__(self) -> str:
         return (
