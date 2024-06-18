@@ -177,8 +177,17 @@ def subscribe_ride(ride_id: int, user: User = Depends(get_current_user)):
         stmt = sa.select(Ride).where(Ride.id == ride_id)
         ride = s.scalars(stmt).first()
 
-    if ride is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"ride id not found: '{ride_id}'",
-        )
+        if ride is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"ride id not found: '{ride_id}'",
+            )
+
+        if ride.seats_offered <= len(ride.passengers):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="ride is full"
+            )
+        ride.passengers.append(user.student)
+        s.commit()
+
+    return {"msg": "successfully subscribed"}
