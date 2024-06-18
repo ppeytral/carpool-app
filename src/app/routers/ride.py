@@ -3,14 +3,16 @@ from os import walk
 
 import sqlalchemy as sa
 from config.database import get_session
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from models.address import Address
 from models.car import Car
 from models.ride import Ride
 from models.school import School
 from models.student import Student
 from models.user import User
+from routers.auth import get_current_user
 from schemas.ride import RideIn, RideOut, RideUpdate
+from schemas.student import StudentOut
 from sqlalchemy.orm import joinedload
 
 ride_router = APIRouter(
@@ -22,7 +24,7 @@ ride_router = APIRouter(
 @ride_router.get(
     path="/",
     summary="Get all",
-    # response_model=list[RideOut],
+    response_model=list[RideOut],
 )
 def get_all(
     start_location: str | None = None,
@@ -143,3 +145,40 @@ def create_ride(ride: RideIn):
         s.execute(stmt)
         s.commit()
         return {"msg": "ride created successfully"}
+
+
+@ride_router.get(
+    "/{ride_id}/subscribers",
+    summary="Get subscribers of a ride",
+    response_model=list[StudentOut],
+)
+def get_subs(ride_id: int):
+
+    with get_session() as s:
+        stmt = sa.select(Ride).where(Ride.id == ride_id)
+        ride = s.scalars(stmt).first()
+
+        if ride is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"ride id not found: '{ride_id}'",
+            )
+        print(ride.passengers)
+
+    return ride.passengers
+
+
+@ride_router.post(
+    "/{ride_id}/subscribe", summary="Subscribe connected user to ride"
+)
+def subscribe_ride(ride_id: int, user: User = Depends(get_current_user)):
+
+    with get_session() as s:
+        stmt = sa.select(Ride).where(Ride.id == ride_id)
+        ride = s.scalars(stmt).first()
+
+    if ride is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"ride id not found: '{ride_id}'",
+        )
