@@ -1,6 +1,5 @@
 from models.base import Base
 from models.car_model import CarModel
-from models.student import Student
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, Relationship, mapped_column, relationship
 
@@ -22,7 +21,7 @@ class Car(Base):
     car_model: Mapped[CarModel] = Relationship()
     vin: Mapped[str] = mapped_column(String())
 
-    student: Mapped[Student] = relationship()
+    student: Mapped["Student"] = relationship()
 
     def __repr__(self) -> str:
         return (

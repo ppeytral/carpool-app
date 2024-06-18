@@ -2,6 +2,7 @@ from datetime import date, time
 
 from models.base import Base
 from models.car import Car
+from models.passenger import passenger
 from sqlalchemy import Boolean, Date, ForeignKey, Integer, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -25,6 +26,9 @@ class Ride(Base):
     on_sunday: Mapped[bool] = mapped_column(Boolean())
 
     car: Mapped["Car"] = relationship()
+    passengers: Mapped[list["Student"]] = relationship(
+        secondary=passenger, back_populates="rides"
+    )
 
     def __repr__(self) -> str:
         return (
