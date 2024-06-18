@@ -44,8 +44,58 @@ def upgrade() -> None:
                 "capacity": 4,
             },
             {
+                "car_make_id": 1,
+                "model_name": "BX",
+                "capacity": 5,
+            },
+            {
                 "car_make_id": 2,
                 "model_name": "208",
+                "capacity": 4,
+            },
+            {
+                "car_make_id": 2,
+                "model_name": "Partner",
+                "capacity": 9,
+            },
+            {
+                "car_make_id": 3,
+                "model_name": "A1",
+                "capacity": 4,
+            },
+            {
+                "car_make_id": 3,
+                "model_name": "Q7",
+                "capacity": 4,
+            },
+            {
+                "car_make_id": 4,
+                "model_name": "Mito",
+                "capacity": 4,
+            },
+            {
+                "car_make_id": 4,
+                "model_name": "Stelvio",
+                "capacity": 5,
+            },
+            {
+                "car_make_id": 5,
+                "model_name": "Série 2",
+                "capacity": 4,
+            },
+            {
+                "car_make_id": 5,
+                "model_name": "Série 1",
+                "capacity": 4,
+            },
+            {
+                "car_make_id": 6,
+                "model_name": "Mustang",
+                "capacity": 2,
+            },
+            {
+                "car_make_id": 6,
+                "model_name": "Focus",
                 "capacity": 4,
             },
         ],

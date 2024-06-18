@@ -61,14 +61,38 @@ def upgrade() -> None:
         [
             {
                 "student_id": 1,
-                "car_model_id": 1,
-                "vin": "743WR13",
+                "car_model_id": 4,
+                "vin": "AT-710-TL",
                 # "color_id": 1,
             },
             {
                 "student_id": 2,
-                "car_model_id": 2,
-                "vin": "AT710TL",
+                "car_model_id": 3,
+                "vin": "CQ-346-RQ",
+                # "color_id": 2,
+            },
+            {
+                "student_id": 3,
+                "car_model_id": 1,
+                "vin": "RH-636-ZF",
+                # "color_id": 2,
+            },
+            {
+                "student_id": 4,
+                "car_model_id": 8,
+                "vin": "EH-174-JF",
+                # "color_id": 2,
+            },
+            {
+                "student_id": 5,
+                "car_model_id": 11,
+                "vin": "JH-743-ID",
+                # "color_id": 2,
+            },
+            {
+                "student_id": 6,
+                "car_model_id": 9,
+                "vin": "BS-638-AN",
                 # "color_id": 2,
             },
         ],

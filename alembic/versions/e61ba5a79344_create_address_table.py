@@ -43,9 +43,24 @@ def upgrade() -> None:
                 "city": "Puyricard",
             },
             {
-                "street": "rue de mon cul sur la commode",
+                "street": "rue des Cyprès",
                 "postal_code": "84140",
                 "city": "Montfavet",
+            },
+            {
+                "street": "12, impasse du Lavoir",
+                "postal_code": "30240",
+                "city": "Saint Hilaire d'Ozilhan",
+            },
+            {
+                "street": "35, rue Bonneterie",
+                "postal_code": "25240",
+                "city": "Montbéliard",
+            },
+            {
+                "street": "60, chemin de Sauvet",
+                "postal_code": "13740",
+                "city": "Rousset",
             },
             {
                 "street": "60, chemin de Fontanille",

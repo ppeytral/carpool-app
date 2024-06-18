@@ -36,6 +36,18 @@ def upgrade() -> None:
             {
                 "name": "Peugeot",
             },
+            {
+                "name": "AUDI",
+            },
+            {
+                "name": "Alfa Roméo",
+            },
+            {
+                "name": "BMW",
+            },
+            {
+                "name": "Ford",
+            },
         ],
     )
 
