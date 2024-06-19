@@ -9,6 +9,7 @@ from routers.auth import auth_router
 from routers.car import car_router
 from routers.car_make import car_make_router
 from routers.car_model import car_model_router
+from routers.message import message_router
 from routers.ride import ride_router
 from routers.school import school_router
 from routers.student import student_router
@@ -40,6 +41,7 @@ app.include_router(car_router)
 app.include_router(user_router)
 app.include_router(school_router)
 app.include_router(ride_router)
+app.include_router(message_router)
 
 
 if __name__ == "__main__":
