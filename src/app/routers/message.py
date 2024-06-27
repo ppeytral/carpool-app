@@ -4,11 +4,21 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from config.database import get_session
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from models.message import Message
 from models.school import School
 from models.student import Student
-from schemas.message import MessageOut
+from models.user import User
+from routers.auth import get_current_user
+from schemas.message import MessageIn, MessageOut
+from schemas.student import StudentOut
 from sqlalchemy.orm import joinedload
 
 message_router = APIRouter(
@@ -122,3 +132,71 @@ def get_conversation(sender_id: int, recipient_id: int):
 
         res = s.scalars(stmt).all()
         return res
+
+
+@message_router.post(
+    "/send/",
+    summary="Send message",
+)
+def send_message(message: MessageIn, user: User = Depends(get_current_user)):
+    with get_session() as s:
+        stmt2 = sa.select(Student).where(Student.id == message.recipient_id)
+        recipient = s.scalar(stmt2)
+        if not recipient:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"user_id not found: '{message.recipient_id}'",
+            )
+
+        stmt = sa.insert(Message).values(
+            sender_id=user.student.id,
+            **dict(message),
+        )
+
+        s.execute(stmt)
+        s.commit()
+
+    return {"msg": "message sent successfully"}
+
+
+@message_router.get(
+    "/conversations",
+    summary="Get student you have started conversations with",
+    response_model=list[StudentOut],
+)
+def get_conversations(user: User = Depends(get_current_user)):
+    with get_session() as s:
+
+        stmt = (
+            sa.select(Message)
+            .where(
+                sa.or_(
+                    Message.sender_id == user.student_id,
+                    Message.recipient_id == user.student_id,
+                )
+            )
+            .options(
+                joinedload(Message.sender)
+                .joinedload(Student.school)
+                .joinedload(School.address)
+            )
+            .options(joinedload(Message.sender).joinedload(Student.address))
+            .options(
+                joinedload(Message.recipient)
+                .joinedload(Student.school)
+                .joinedload(School.address)
+            )
+            .options(joinedload(Message.recipient).joinedload(Student.address))
+        )
+        conversations = s.scalars(stmt).all()
+        students = []
+        for c in conversations:
+            students.append(c.recipient)
+            students.append(c.sender)
+
+        result = filter(
+            lambda x: x.id != user.student_id,
+            students,
+        )
+
+    return set(result)

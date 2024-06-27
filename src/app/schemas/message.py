@@ -10,3 +10,9 @@ class MessageOut(BaseModel):
     recipient: StudentOut
     message: str
     created_at: datetime
+
+
+class MessageIn(BaseModel):
+    recipient_id: int
+    message: str
+    created_at: datetime = datetime.now()

@@ -84,7 +84,7 @@ def update_user_by_id(user_id: int, new_user: UserUpdate):
 
 
 @user_router.post(
-    "/{user_id}/update_password",
+    "/update_password",
     summary="Change password of user",
 )
 def update_password(
