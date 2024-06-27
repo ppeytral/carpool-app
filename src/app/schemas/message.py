@@ -1,5 +1,4 @@
 from datetime import datetime
-from os import walk
 
 from pydantic import BaseModel
 from schemas.student import StudentOut

@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass
+from datetime import datetime
 
 import sqlalchemy as sa
 from config.database import get_session
@@ -24,6 +25,12 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket, id: int):
         await websocket.accept()
         self.active_connections[id] = websocket
+        connection_message = {
+            "sender": 0,
+            "destination": id,
+            "message": "Connected",
+        }
+        await websocket.send_text(json.dumps(connection_message))
 
     def disconnect(self, websocket: WebSocket):
         id = self.find_connection_id(websocket)
@@ -54,24 +61,38 @@ async def websocket_endpoint(websocket: WebSocket, sender_id: int):
     try:
         while True:
             data = await websocket.receive_text()
-            print()
-            print(connection_manager.active_connections)
+            print(data)
+
             json_data = json.loads(data)
+            sender = json_data["sender"]
             dest = json_data["destination"]
             message = json_data["message"]
+            with get_session() as s:
+                stmt = sa.insert(Message).values(
+                    sender_id=sender,
+                    recipient_id=dest,
+                    message=message,
+                    created_at=datetime.now(),
+                )
+                s.execute(stmt)
+                s.commit()
 
-            await connection_manager.send_message_to(dest, message)
+            await connection_manager.send_message_to(sender, data)
+            if dest in connection_manager.active_connections:
+                await connection_manager.send_message_to(dest, data)
     except WebSocketDisconnect:
         id = connection_manager.disconnect(websocket)
         await connection_manager.broadcast(
             json.dumps({"type": "disconnected", "id": id})
         )
+    except KeyError:
+        print("recipient not connected")
 
 
 @message_router.get(
     "/sender/{sender_id}/recipient/{recipient_id}",
     summary="Get all messages for a conversation",
-    response_model=list[MessageOut],
+    # response_model=list[MessageOut],
 )
 def get_conversation(sender_id: int, recipient_id: int):
     with get_session() as s:
@@ -86,10 +107,14 @@ def get_conversation(sender_id: int, recipient_id: int):
             .options(joinedload(Message.recipient))
             .where(
                 sa.or_(
-                    Message.recipient_id == sender_id,
-                    Message.recipient_id == recipient_id,
-                    Message.sender_id == sender_id,
-                    Message.sender_id == recipient_id,
+                    sa.and_(
+                        Message.recipient_id == sender_id,
+                        Message.sender_id == recipient_id,
+                    ),
+                    sa.and_(
+                        Message.recipient_id == recipient_id,
+                        Message.sender_id == sender_id,
+                    ),
                 )
             )
             .order_by(Message.created_at)
