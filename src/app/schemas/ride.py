@@ -39,7 +39,7 @@ class RideIn(BaseModel):
     car_id: int
     start_time: time
     start_date: date
-    end_date: date
+    end_date: date | None
     on_monday: bool
     on_tuesday: bool
     on_wednesday: bool

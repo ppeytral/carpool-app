@@ -3,6 +3,7 @@ from config.database import get_session
 from fastapi import APIRouter, HTTPException, status
 from models.car import Car
 from models.car_model import CarModel
+from models.passenger import passenger
 from models.ride import Ride
 from models.school import School
 from models.student import Student
@@ -45,6 +46,7 @@ def get_cars_by_student_id(student_id: int):
 
         stmt = (
             sa.select(Car)
+            .where(Car.student_id == student_id)
             .options(joinedload(Car.car_model).joinedload(CarModel.car_make))
             .options(
                 joinedload(Car.student)
@@ -103,7 +105,7 @@ def get_student_offered_rides(student_id: int):
             sa.select(Student).where(Student.id == student_id)
         ).first()
         if not student:
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"user_id not found: '{student_id}'",
             )
@@ -111,6 +113,46 @@ def get_student_offered_rides(student_id: int):
             sa.select(Ride)
             .join(Car)
             .where(Car.student_id == student_id)
+            .options(
+                joinedload(Ride.car)
+                .joinedload(Car.student)
+                .joinedload(Student.address)
+            )
+            .options(
+                joinedload(Ride.car)
+                .joinedload(Car.student)
+                .joinedload(Student.school)
+                .joinedload(School.address)
+            )
+            .options(
+                joinedload(Ride.car)
+                .joinedload(Car.car_model)
+                .joinedload(CarModel.car_make)
+            )
+        )
+        result = s.scalars(stmt).all()
+        return result
+
+
+@student_router.get(
+    "/{student_id}/subscribed_rides",
+    summary="Get subscribed rides by students",
+    response_model=list[RideOut],
+)
+def get_student_subscribed_rides(student_id: int):
+    with get_session() as s:
+        student = s.scalars(
+            sa.select(Student).where(Student.id == student_id)
+        ).first()
+        if not student:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"user_id not found: '{student_id}'",
+            )
+        stmt = (
+            sa.select(Ride)
+            .join(passenger)
+            .where(passenger.c.student_id == student_id)
             .options(
                 joinedload(Ride.car)
                 .joinedload(Car.student)

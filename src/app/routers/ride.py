@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from models.address import Address
 from models.car import Car
 from models.car_model import CarModel
+from models.passenger import passenger
 from models.ride import Ride
 from models.school import School
 from models.student import Student
@@ -212,3 +213,40 @@ def subscribe_ride(ride_id: int, user: User = Depends(get_current_user)):
             )
 
     return {"msg": "successfully subscribed"}
+
+
+@ride_router.post(
+    "/{ride_id}/unsubscribe", summary="Unsubscribe connected user from ride"
+)
+def unsubscribe_ride(ride_id: int, user: User = Depends(get_current_user)):
+
+    with get_session() as s:
+        stmt = (
+            sa.select(Ride)
+            .join(passenger)
+            .where(Ride.id == ride_id)
+            .options(joinedload(Ride.passengers))
+        )
+        ride = s.scalars(stmt).first()
+
+        studentstmt = sa.select(Student).where(Student.id == user.student_id)
+        user_student = s.scalar(studentstmt)
+
+        if ride is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"ride id not found: '{ride_id}'",
+            )
+
+        if user.student_id not in [
+            passenger.id for passenger in ride.passengers
+        ]:
+
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Vous n'êtes pas inscrit sur ce trajet.",
+            )
+        ride.passengers.remove(user_student)
+        s.commit()
+
+    return {"msg": "successfully unsubscribed"}
