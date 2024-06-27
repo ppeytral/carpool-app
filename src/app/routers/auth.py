@@ -2,6 +2,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import sqlalchemy as sa
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from config.config import get_setting
 from config.database import get_session
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -56,6 +58,8 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 def authenticate_user(username: str, password: str) -> User:
+    ph = PasswordHasher()
+
     with get_session() as s:
         stmt = sa.select(User).where(User.username == username)
         user = s.scalar(stmt)
@@ -63,7 +67,9 @@ def authenticate_user(username: str, password: str) -> User:
             raise HTTPException(
                 status_code=400, detail="incorrect username or password"
             )
-        if not password == user.password:
+        try:
+            ph.verify(user.password, password)
+        except VerifyMismatchError:
             raise HTTPException(
                 status_code=400, detail="incorrect username or password"
             )

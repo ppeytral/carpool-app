@@ -1,8 +1,11 @@
 import sqlalchemy as sa
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from config.database import get_session
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from models.user import User
-from schemas.user import UserOut, UserUpdate
+from routers.auth import get_current_user
+from schemas.user import UserOut, UserPasswordUpdate, UserUpdate
 
 user_router = APIRouter(
     prefix="/user",
@@ -61,7 +64,7 @@ def update_user_by_id(user_id: int, new_user: UserUpdate):
             sa.select(User).where(User.id == user_id)
         ).first()
         if not user_to_update:
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"user_id not found: '{user_id}'",
             )
@@ -69,7 +72,6 @@ def update_user_by_id(user_id: int, new_user: UserUpdate):
             sa.update(User)
             .where(User.id == user_id)
             .values(
-                password=new_user.password or user_to_update.password,
                 student_id=new_user.student_id or user_to_update.student_id,
                 is_active=new_user.is_active or user_to_update.is_active,
                 username=new_user.username or user_to_update.username,
@@ -79,3 +81,37 @@ def update_user_by_id(user_id: int, new_user: UserUpdate):
         s.execute(stmt)
         s.commit()
         return {"msg": f"Updated user: '{user_id}'"}
+
+
+@user_router.post(
+    "/{user_id}/update_password",
+    summary="Change password of user",
+)
+def update_password(
+    new_password: UserPasswordUpdate, user: User = Depends(get_current_user)
+):
+    if new_password.new_password != new_password.verified_new_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"mismatching password",
+        )
+    ph = PasswordHasher()
+    try:
+        ph.verify(user.password, new_password.current_password)
+
+        hashed_pw = ph.hash(new_password.new_password)
+        with get_session() as s:
+            stmt = (
+                sa.update(User)
+                .where(User.id == user.id)
+                .values(password=hashed_pw)
+            )
+        s.execute(stmt)
+        s.commit()
+        return {"msg": "password updated successfully"}
+
+    except VerifyMismatchError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"mismatching password",
+        )

@@ -4,9 +4,14 @@ from pydantic import BaseModel
 from schemas.student import StudentOut
 
 
+class UserPasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str
+    verified_new_password: str
+
+
 class UserUpdate(BaseModel):
     student_id: int | None = None
-    password: str | None = None
     is_active: bool | None = None
     username: str | None = None
     updated_at: datetime = datetime.now()
