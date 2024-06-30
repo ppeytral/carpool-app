@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Sequence, Union
 
 import sqlalchemy as sa
+from argon2 import PasswordHasher
 
 from alembic import op
 
@@ -18,6 +19,7 @@ revision: str = "dc5896a5e31f"
 down_revision: Union[str, None] = "d9c0cd73f52f"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
+ph = PasswordHasher()
 
 
 def upgrade() -> None:
@@ -50,7 +52,7 @@ def upgrade() -> None:
             {
                 "student_id": 1,
                 "username": "ppeytral",
-                "password": "skarhead0410",
+                "password": ph.hash("password"),
                 "is_active": True,
                 "created_at": datetime.now(),
                 "updated_at": datetime.now(),
@@ -60,7 +62,7 @@ def upgrade() -> None:
             {
                 "student_id": 2,
                 "username": "rvasseur",
-                "password": "rvasseur",
+                "password": ph.hash("password"),
                 "is_active": True,
                 "created_at": datetime.now(),
                 "updated_at": datetime.now(),
@@ -70,7 +72,7 @@ def upgrade() -> None:
             {
                 "student_id": 3,
                 "username": "ccoutur",
-                "password": "password",
+                "password": ph.hash("password"),
                 "is_active": True,
                 "created_at": datetime.now(),
                 "updated_at": datetime.now(),
@@ -80,7 +82,7 @@ def upgrade() -> None:
             {
                 "student_id": 4,
                 "username": "jpeytral",
-                "password": "password",
+                "password": ph.hash("password"),
                 "is_active": True,
                 "created_at": datetime.now(),
                 "updated_at": datetime.now(),
@@ -90,7 +92,7 @@ def upgrade() -> None:
             {
                 "student_id": 5,
                 "username": "conderbeke",
-                "password": "password",
+                "password": ph.hash("password"),
                 "is_active": True,
                 "created_at": datetime.now(),
                 "updated_at": datetime.now(),
@@ -100,7 +102,7 @@ def upgrade() -> None:
             {
                 "student_id": 6,
                 "username": "atournier",
-                "password": "password",
+                "password": ph.hash("password"),
                 "is_active": True,
                 "created_at": datetime.now(),
                 "updated_at": datetime.now(),

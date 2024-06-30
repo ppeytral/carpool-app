@@ -83,6 +83,43 @@ def get_all(
         return trips
 
 
+@ride_router.get(
+    "/{ride_id}",
+    summary="Get ride by id",
+    response_model=RideOut,
+)
+def get_one_ride(ride_id: int):
+    with get_session() as s:
+        stmt = (
+            sa.select(Ride)
+            .join(Ride.car)
+            .join(Car.student)
+            .join(Student.address)
+            .join(Ride.car)
+            .join(Car.student)
+            .join(Student.school)
+            .options(
+                joinedload(Ride.car)
+                .joinedload(Car.car_model)
+                .joinedload(CarModel.car_make)
+            )
+            .options(
+                joinedload(Ride.car)
+                .joinedload(Car.student)
+                .joinedload(Student.address)
+            )
+            .options(
+                joinedload(Ride.car)
+                .joinedload(Car.student)
+                .joinedload(Student.school)
+                .joinedload(School.address)
+            )
+            .where(Ride.id == ride_id)
+        )
+        ride = s.scalar(stmt)
+    return ride
+
+
 @ride_router.delete(
     "/{ride_id}",
     summary="Delete ride by id",
