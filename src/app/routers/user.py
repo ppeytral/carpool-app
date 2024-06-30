@@ -1,11 +1,16 @@
+import secrets
+import string
+
 import sqlalchemy as sa
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from config.database import get_session
 from fastapi import APIRouter, Depends, HTTPException, status
+from helpers.email import send_email_without_attachment
+from models.student import Student
 from models.user import User
 from routers.auth import get_current_user
-from schemas.user import UserOut, UserPasswordUpdate, UserUpdate
+from schemas.user import UserIn, UserOut, UserPasswordUpdate, UserUpdate
 
 user_router = APIRouter(
     prefix="/user",
@@ -115,3 +120,37 @@ def update_password(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"mismatching password",
         )
+
+
+@user_router.post(
+    "/",
+    summary="Create a user",
+)
+async def create_user(user_infos: UserIn):
+    with get_session() as s:
+        stmt = sa.select(Student).where(Student.id == user_infos.student_id)
+        student = s.scalar(stmt)
+        if not student:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"student id not found: {user_infos.student_id}",
+            )
+
+        chars = string.ascii_letters + string.digits + string.printable
+        password = "".join(secrets.choice(chars) for i in range(8))
+
+        ph = PasswordHasher()
+
+        hashed_pw = ph.hash(password)
+
+        stmt = sa.insert(User).values(password=hashed_pw, **dict(user_infos))
+        s.execute(stmt)
+        s.commit()
+        email_result = await send_email_without_attachment(
+            subject="Votre nouveau compte SchlagHop",
+            body="Votre nouveau compte Schlaghop a été créé ! Voici votre mot de passe: "
+            + password,
+            destination=student.email,
+        )
+
+        return {"msg": "user created successfully", "email_sent": email_result}

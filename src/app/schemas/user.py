@@ -26,3 +26,13 @@ class UserOut(BaseModel):
     is_moderator: bool
     created_at: datetime
     updated_at: datetime
+
+
+class UserIn(BaseModel):
+    student_id: int
+    username: str
+    is_active: bool
+    is_admin: bool
+    is_moderator: bool
+    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now()
